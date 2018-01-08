@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!--Basic HTML to add ski dates-->
+<!--Basic HTML to add ski dates, ski hours, show graph-->
 <html>
 
 <head>
@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="stylesheets/page.css" />
     <link href='https://fonts.googleapis.com/css?family=Bitter:400,700' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 </head>
 
 <body>
@@ -16,7 +17,8 @@
         <h1 class="header-title">Ski Date Prediction</h1>
         <form autocomplete="off" id="skiForm">
             <input class="text-input" type="date" id="skiBar">
-            <button class="button" type="submit">Add Ski Date</button>
+            <input class="text-input" type="text" id="skiHours">
+            <button class="button" type="submit">Add Ski Date and Hours</button>
         </form>
     </div>
 
@@ -28,7 +30,9 @@
 
     <div class="recent">
         <h2 class="recent-title">Ski Graph</h2>
+        <canvas id="myChart" width="400" height="400"></canvas>
     </div>
+
 
     <script type="text/javascript">
         'use strict';
@@ -50,27 +54,41 @@
             return [];
         }
 
-        // Validate and save ski dates
-        function saveSkiDate(str) {
+        // Retrieve skihours from Local Storage, return an array
+        function getRecentSkiHours() {
+            var skiHours = localStorage.getItem('recentSkiHours');
+            if (skiHours) {
+                return JSON.parse(skiHours);
+            }
+            return [];
+        }
+
+        // Validate and save ski dates and ski hours
+        function saveSkiDate(str, str2) {
             var skiDates = getRecentSkiDates();
             if (skiDates.indexOf(str) > -1 || !str) {
                 return false;
             }
             skiDates.push(str);
+            var skiHours = getRecentSkiHours();
+            skiHours.push(str2);
             localStorage.setItem('recentSkiDates', JSON.stringify(skiDates));
+            localStorage.setItem('recentSkiHours', JSON.stringify(skiHours));
             return true;
         }
 
         // Clear out ski dates
-        function removeSkiDates() {
+        function removeSkiDatesandHours() {
             localStorage.removeItem('recentSkiDates');
+            localStorage.removeItem('recentSkiHours');
         }
 
         // Create an li, given string contents, append to the supplied ul
-        function appendListItem(listElement, string) {
+        function appendListItem(listElement, string, stringhours) {
             var listItemElement = document.createElement('LI');
             listItemElement.innerHTML = string;
             listElement.appendChild(listItemElement);
+
         }
 
         // Empty the contents of an element (ul)
@@ -84,6 +102,7 @@
                 // Get references to DOM elements
                 var skiForm = document.getElementById('skiForm');
                 var skiBar = document.getElementById('skiBar');
+                var skiHours = document.getElementById('skiHours');
                 var recentSkiDateList = document.getElementById('recentSkiDateList');
                 var clearButton = document.getElementById('clearStorage');
 
@@ -96,17 +115,47 @@
                 // Set event handlers
                 skiForm.addEventListener('submit', function(event) {
                     var skiDateToAdd = skiBar.value;
-                    if (saveSkiDate(skiDateToAdd)) {
-                        appendListItem(recentSkiDateList, skiDateToAdd);
+                    var skiHoursToAdd = skiHours.value;
+                    if (saveSkiDate(skiDateToAdd, skiHoursToAdd)) {
+                        appendListItem(recentSkiDateList, skiDateToAdd, skiHoursToAdd);
                     }
                 });
 
                 clearButton.addEventListener('click', function(event) {
-                    removeSkiDates();
+                    removeSkiDatesandHours();
                     clearList(recentSkiDateList);
                 });
             }
+
+            generateGraph();
         };
+
+        function generateGraph() {
+
+
+            var ctx = document.getElementById("myChart").getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: getRecentSkiDates(),
+                    datasets: [{
+                        label: 'Ski Days',
+                        data: getRecentSkiHours(),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+
+        }
 
     </script>
 </body>
