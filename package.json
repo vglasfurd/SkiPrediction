@@ -1,0 +1,17 @@
+{
+  "name": "javascript-ski-date",
+  "version": "1.0.0",
+  "description": "App to predict ski dates",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  }
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "path": "^0.12.7"
+  }
+}

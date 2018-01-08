@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Ski Prediction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="stylesheets/page.css" />
+    <link href='https://fonts.googleapis.com/css?family=Bitter:400,700' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1 class="header-title">Ski Date Prediction</h1>
+        <form autocomplete="off" id="skiForm">
+            <input class="text-input" type="date" id="skiBar">
+            <button class="button" type="submit">Add Ski Date</button>
+        </form>
+    </div>
+
+    <div class="recent">
+        <h2 class="recent-title">Recent Ski Dates</h2>
+        <button class="button" type="button" id="clearStorage">Clear Storage</button>
+        <ul class="recent-list" id="recentSkiDateList"></ul>
+    </div>
+
+    <div class="recent">
+        <h2 class="recent-title">Ski Graph</h2>
+    </div>
+
+    <script type="text/javascript">
+        'use strict';
+        // Test for local storage
+        function supportsLocalStorage() {
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Retrieve skidates from Local Storage, return an array
+        function getRecentSkiDates() {
+            var skiDates = localStorage.getItem('recentSkiDates');
+            if (skiDates) {
+                return JSON.parse(skiDates);
+            }
+            return [];
+        }
+
+        // Validate and save ski dates
+        function saveSkiDate(str) {
+            var skiDates = getRecentSkiDates();
+            if (skiDates.indexOf(str) > -1 || !str) {
+                return false;
+            }
+            skiDates.push(str);
+            localStorage.setItem('recentSkiDates', JSON.stringify(skiDates));
+            return true;
+        }
+
+        // Clear out ski dates
+        function removeSkiDates() {
+            localStorage.removeItem('recentSkiDates');
+        }
+
+        // Create an li, given string contents, append to the supplied ul
+        function appendListItem(listElement, string) {
+            var listItemElement = document.createElement('LI');
+            listItemElement.innerHTML = string;
+            listElement.appendChild(listItemElement);
+        }
+
+        // Empty the contents of an element (ul)
+        function clearList(listElement) {
+            listElement.innerHTML = '';
+        }
+
+        window.onload = function() {
+            // Make sure Local Storage exists before trying to use it
+            if (supportsLocalStorage()) {
+                // Get references to DOM elements
+                var skiForm = document.getElementById('skiForm');
+                var skiBar = document.getElementById('skiBar');
+                var recentSkiDateList = document.getElementById('recentSkiDateList');
+                var clearButton = document.getElementById('clearStorage');
+
+                // Initialize display list
+                var recentSkiDates = getRecentSkiDates();
+                recentSkiDates.forEach(function(skiDate) {
+                    appendListItem(recentSkiDateList, skiDate);
+                });
+
+                // Set event handlers
+                skiForm.addEventListener('submit', function(event) {
+                    var skiDateToAdd = skiBar.value;
+                    if (saveSkiDate(skiDateToAdd)) {
+                        appendListItem(recentSkiDateList, skiDateToAdd);
+                    }
+                });
+
+                clearButton.addEventListener('click', function(event) {
+                    removeSkiDates();
+                    clearList(recentSkiDateList);
+                });
+            }
+        };
+
+    </script>
+</body>
+
+</html>
