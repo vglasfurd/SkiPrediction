@@ -16,7 +16,7 @@
         <h1 class="header-title">Ski Date Prediction</h1>
         <form autocomplete="off" id="skiForm">
             <input class="text-input" type="date" id="skiBar">
-            <input class="text-input" type="number" id="skiHour">
+            <input class="text-input" type="text" id="skiHours">
             <button class="button" type="submit">Add Ski Date and Hours</button>
         </form>
     </div>
@@ -53,24 +53,37 @@
             return [];
         }
 
-        // Validate and save ski dates
-        function saveSkiDate(str) {
+        // Retrieve skihours from Local Storage, return an array
+        function getRecentSkiHours() {
+            var skiHours = localStorage.getItem('recentSkiHours');
+            if (skiHours) {
+                return JSON.parse(skiHours);
+            }
+            return [];
+        }
+
+        // Validate and save ski dates and ski hours
+        function saveSkiDate(str, str2) {
             var skiDates = getRecentSkiDates();
             if (skiDates.indexOf(str) > -1 || !str) {
                 return false;
             }
             skiDates.push(str);
+            var skiHours = getRecentSkiHours();
+            skiHours.push(str2);
             localStorage.setItem('recentSkiDates', JSON.stringify(skiDates));
+            localStorage.setItem('recentSkiHours', JSON.stringify(skiHours));
             return true;
         }
 
         // Clear out ski dates
-        function removeSkiDates() {
+        function removeSkiDatesandHours() {
             localStorage.removeItem('recentSkiDates');
+            localStorage.removeItem('recentSkiHours');
         }
 
         // Create an li, given string contents, append to the supplied ul
-        function appendListItem(listElement, string) {
+        function appendListItem(listElement, string, stringhours) {
             var listItemElement = document.createElement('LI');
             listItemElement.innerHTML = string;
             listElement.appendChild(listItemElement);
@@ -88,6 +101,7 @@
                 // Get references to DOM elements
                 var skiForm = document.getElementById('skiForm');
                 var skiBar = document.getElementById('skiBar');
+                var skiHours = document.getElementById('skiHours');
                 var recentSkiDateList = document.getElementById('recentSkiDateList');
                 var clearButton = document.getElementById('clearStorage');
 
@@ -100,13 +114,14 @@
                 // Set event handlers
                 skiForm.addEventListener('submit', function(event) {
                     var skiDateToAdd = skiBar.value;
-                    if (saveSkiDate(skiDateToAdd)) {
-                        appendListItem(recentSkiDateList, skiDateToAdd);
+                    var skiHoursToAdd = skiHours.value;
+                    if (saveSkiDate(skiDateToAdd, skiHoursToAdd)) {
+                        appendListItem(recentSkiDateList, skiDateToAdd, skiHoursToAdd);
                     }
                 });
 
                 clearButton.addEventListener('click', function(event) {
-                    removeSkiDates();
+                    removeSkiDatesandHours();
                     clearList(recentSkiDateList);
                 });
             }
@@ -119,12 +134,12 @@
 
             var ctx = document.getElementById("myChart").getContext('2d');
             var myChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: getRecentSkiDates(),
                     datasets: [{
                         label: 'Ski Days',
-                        data: [12, 19, 3, 5, 2, 3],
+                        data: getRecentSkiHours(),
                         borderWidth: 1
                     }]
                 },
